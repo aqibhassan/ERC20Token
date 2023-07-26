@@ -1,7 +1,3 @@
-/**
- *Submitted for verification at Etherscan.io on 2023-07-25
- */
-
 // SPDX-License-Identifier: No
 
 pragma solidity =0.8.19;
@@ -211,7 +207,7 @@ interface IERC20 {
 }
 
 //--- Contract v2 ---//
-contract XDOGE is Context, Ownable, IERC20 {
+contract XETHToken is Context, Ownable, IERC20 {
     function totalSupply() external view override returns (uint256) {
         if (_totalSupply == 0) {
             revert();
@@ -256,21 +252,22 @@ contract XDOGE is Context, Ownable, IERC20 {
     mapping(address => bool) private isPresaleAddress;
     mapping(address => uint256) private balance;
 
-    uint256 public constant _totalSupply = 420_000_000_000_000 * 10 ** 8;
-    uint256 public constant swapThreshold = _totalSupply / 2_500;
-    uint256 public constant buyfee = 10;
-    uint256 public constant sellfee = 10;
+    uint256 public constant _totalSupply = 1_000_000 * 10 ** 8;
+    // uint256 public constant swapThreshold = _totalSupply / 2_500;
+    uint256 public constant swapThreshold = 1; // change into 1 so there will be no more threshold for swap control.
+    uint256 public  buyfee = 10; // constant to normal variable so we can able to change
+    uint256 public  sellfee = 10; // constant to normal variable so we can able to change
     uint256 public constant transferfee = 0;
     uint256 public constant botFee = 890;
     uint256 private _deadline;
     uint256 public constant fee_denominator = 1_000;
     bool private canSwapFees = false;
     address payable private marketingAddress =
-        payable(0xdC447192E935202FBF4A8Aff3FF95649b4Cd2dA4);
+        payable(0x986aC081Ae218978C1ca9871eCadd2063969Cdbe);
 
     IRouter02 public swapRouter;
-    string private constant _name = "XDOGE";
-    string private constant _symbol = "XDOGE";
+    string private constant _name = "Xeth";
+    string private constant _symbol = "XE";
     uint8 private constant _decimals = 8;
     address public constant DEAD = 0x000000000000000000000000000000000000dEaD;
     address public lpPair;
@@ -294,18 +291,12 @@ contract XDOGE is Context, Ownable, IERC20 {
     constructor() {
         _noFee[msg.sender] = true;
 
-        if (block.chainid == 56) {
-            swapRouter = IRouter02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
-        } else if (block.chainid == 97) {
-            swapRouter = IRouter02(0xD99D1c33F9fC3444f8101754aBC46c52416550D1);
-        } else if (
+       if (
             block.chainid == 1 || block.chainid == 4 || block.chainid == 3
         ) {
             swapRouter = IRouter02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
-        } else if (block.chainid == 43114) {
-            swapRouter = IRouter02(0x60aE616a2155Ee3d9A68541Ba4544862310933d4);
-        } else if (block.chainid == 250) {
-            swapRouter = IRouter02(0xF491e7B69E4244ad4002BC14e878a34207E38c29);
+        } else if (block.chainid == 11155111) {
+            swapRouter = IRouter02(0xC532a74256D3Db42D0Bf7a0400fEFDbad7694008);
         } else {
             revert("Chain not valid");
             // swapRouter = IRouter02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
@@ -370,6 +361,16 @@ contract XDOGE is Context, Ownable, IERC20 {
 
     function setNoFeeWallet(address account, bool enabled) public onlyOwner {
         _noFee[account] = enabled;
+    }
+    // new function added to control buy fee
+    function setBuyFee(uint256 fee) public onlyOwner {
+        require(fee>=1 && fee<=10, "fee should be in between 1 to 10");
+        buyfee=fee;
+    }
+     // new function added to control sell fee
+     function setSellFee(uint256 fee) public onlyOwner {
+        require(fee>=1 && fee<=10, "fee should be in between 1 to 10");
+        sellfee=fee;
     }
 
     function isLimitedAddress(
